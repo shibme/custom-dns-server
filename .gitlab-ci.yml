@@ -1,0 +1,33 @@
+image: docker:latest
+services:
+  - docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay
+  MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+stages:
+  - "Build"
+  - "Release"
+
+Java Build:
+  image: maven:3-jdk-8
+  stage: "Build"
+  script: mvn clean install
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - target/custom-dns-server.jar
+
+Docker Image Build:
+  stage: "Release"
+  variables:
+    DOCKER_IMAGE: "shibme/custom-dns-server"
+  script:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker build -t $DOCKER_IMAGE .
+    - docker push $DOCKER_IMAGE
+    - docker logout
+  only:
+    - master

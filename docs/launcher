@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+DOCKER_IMAGE="shibme/custom-dns-server"
+DEFAULT_CONTAINER_NAME="custom-dns-server-container"
+DOCKER_VERSION_RESPONSE=$(docker -v)
+EXPECTED_RESPONSE="Docker version "
+if test "${DOCKER_VERSION_RESPONSE#*$EXPECTED_RESPONSE}" != "$DOCKER_VERSION_RESPONSE"; then
+  #Setting default container name if not set
+  if [ -z "$CONTAINER_NAME" ]; then
+    export CONTAINER_NAME=${DEFAULT_CONTAINER_NAME}
+  fi
+  echo "Attempting to stop and remove any instances of $CONTAINER_NAME..."
+  docker stop $CONTAINER_NAME || true && docker rm $CONTAINER_NAME || true
+  docker pull $DOCKER_IMAGE
+  docker run -p 53:53 --name $CONTAINER_NAME --restart always -d $DOCKER_IMAGE
+else
+  echo "Please install docker client before you begin."
+fi
