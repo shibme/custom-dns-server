@@ -6,7 +6,7 @@ import java.util.List;
 
 final class AddressCache {
 
-    private static final int resetDuration = 10000;
+    private static final int resetDuration = 30000;
 
     private int pos;
     private List<Addr> addrs;
